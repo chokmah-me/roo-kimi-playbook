@@ -182,7 +182,7 @@ This project follows [Semantic Versioning](https://semver.org/):
 
 ## Links
 
-- [GitHub Repository](https://github.com/dyb5784/roo-kimi-playbook)
-- [Latest Release](https://github.com/dyb5784/roo-kimi-playbook/releases/tag/v4.1.3)
-- [Issues](https://github.com/dyb5784/roo-kimi-playbook/issues)
-- [Documentation](https://github.com/dyb5784/roo-kimi-playbook/blob/master/README.md)
+- [GitHub Repository](https://github.com/chokmah-me/roo-kimi-playbook)
+- [Latest Release](https://github.com/chokmah-me/roo-kimi-playbook/releases/tag/v4.1.3)
+- [Issues](https://github.com/chokmah-me/roo-kimi-playbook/issues)
+- [Documentation](https://github.com/chokmah-me/roo-kimi-playbook/blob/master/README.md)

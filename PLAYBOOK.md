@@ -143,5 +143,5 @@ MIT License - see LICENSE file for details.
 
 **Version**: 4.1.0  
 **Date**: December 12, 2025  
-**Repository**: https://github.com/dyb5784/roo-kimi-playbook  
+**Repository**: https://github.com/chokmah-me/roo-kimi-playbook  
 **Citation**: Practitioner's Playbook: Agentic Mesh Configuration for Kimi K2 and Roo Code

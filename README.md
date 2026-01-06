@@ -148,5 +148,5 @@ MIT License
 
 **Version**: 4.1.3
 **Date**: December 12, 2025
-**Repository**: https://github.com/dyb5784/roo-kimi-playbook
-**Release**: https://github.com/dyb5784/roo-kimi-playbook/releases/tag/v4.1.3
+**Repository**: https://github.com/chokmah-me/roo-kimi-playbook
+**Release**: https://github.com/chokmah-me/roo-kimi-playbook/releases/tag/v4.1.3
