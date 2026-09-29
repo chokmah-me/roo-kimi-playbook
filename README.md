@@ -1,28 +1,33 @@
-# Kimi K2 & Roo Code Playbook v4.1.3
+# Kimi for Coding, Zoo Code & Kimi Code CLI Playbook v5.0.0
 
-**Practitioner's Playbook: Agentic Mesh Configuration for Kimi K2 & Roo Code**
+**Practitioner's Playbook for agentic coding with the Kimi for Coding endpoint (Kimi K2.8 Preview / K3)**
 
-Complete configuration guide for optimizing Kimi K2's agent-tuned model with Roo Code.
+> **⚠️ Roo Code was discontinued in April 2026** (final release v3.54.0; repository archived read-only). This playbook targets **Zoo Code** — the Apache-2.0 community successor fork that continues the Roo Code lineage — and Moonshot's official **Kimi Code CLI**. All legacy `.roo/` configuration paths work unchanged in Zoo Code.
 
-**Latest Release**: v4.1.3 (Enhanced with Kimi K2 efficiency optimizations)
+## 🆕 What's New in v5.0.0 (September 2026)
+
+- **Harness updated**: Roo Code → **Zoo Code** (+ Kimi Code CLI track)
+- **Model updated**: `kimi-for-coding` now runs **K2.8 Preview** (1M context, max output 32768, effort levels `low`/`high`/`max`); `k3`, `k3-256k`, `kimi-for-coding-highspeed` also on the endpoint
+- **"18-step limit" removed**: replaced with measured-horizon management; current models are rated for hundreds of tool calls
+- **Cost model corrected**: the `/coding/` endpoint is **subscription-quota** (membership tiers); per-token pricing lives on the separate Open Platform
+- **Context rituals replaced**: Zoo Code auto-condensation + checkpoints + AGENTS.md supersede manual file-ordering and `/clear` cadence
+- **Legacy Format demoted**: use Zoo Code's native Kimi Code provider (OAuth) instead
 
 ## 📦 Package Contents
 
 ### Core Configuration Files
 - **`.clinerules`** - Critical instruction set for AI assistants
-- **`.roo/rules.md`** - Roo Code specific configuration rules
+- **`.roo/rules.md`** - Zoo Code specific configuration rules (Zoo Code reads the same `.roo/` paths)
 
 ### Documentation
-- **`PLAYBOOK.md`** - Main Kimi K2 configuration guide
-- **`INSTALLATION_GUIDE.md`** - Step-by-step setup instructions
+- **`PLAYBOOK.md`** - Main configuration & strategy guide
+- **`INSTALLATION_GUIDE.md`** - Step-by-step setup for all three tracks
 - **`EVERYDAY_USE_CASES.md`** - Practical usage examples
 - **`VERSION_CHANGELOG.md`** - Version history and changes
 
 ## 🚀 Quick Start
 
 ### For New Projects
-
-Copy these files to your project root:
 
 ```bash
 # Copy configuration files
@@ -35,118 +40,51 @@ cp INSTALLATION_GUIDE.md /path/to/your/project/
 cp EVERYDAY_USE_CASES.md /path/to/your/project/
 ```
 
-### Configuration Files Explained
+Then install Zoo Code from the VS Code Marketplace (or the Kimi Code CLI) and follow `INSTALLATION_GUIDE.md`.
 
-#### `.clinerules` - Critical Instructions
-```bash
-# 🛑 CRITICAL INSTRUCTION SET 🛑
-# 1. NO ACTION WITHOUT CONTEXT: Read CONTEXT.md first
-# 2. VERIFY FIRST: First tool call MUST be read_file("CONTEXT.md")
-# 3. 18-STEP LIMIT: Stop and ask for sub-task breakdown if exceeded
-# 4. NO RAW DUMPS: Output Specifications or Diffs only
+### Configuration Summary
 
-# 🔄 The "Boomerang" Handoff
-# - Orchestrator: Expect "Boomerang" return (Summary + Test Result)
-# - Code Node: Return results immediately. Do not hold context open
-```
+**Track A — Zoo Code, native Kimi Code provider (recommended):**
+- Provider: `Kimi Code` (OAuth sign-in) · Model: `kimi-for-coding` · Effort: `high`
 
-#### `.roo/rules.md` - Roo Code Configuration
-```bash
-# Provider Settings
-Provider: OpenAI Compatible
-Base URL: https://api.kimi.com/coding/v1
-Model: kimi-for-coding
-Max Output: 16384
-Reasoning: Medium
+**Track B — Zoo Code, OpenAI-compatible:**
+- Base URL: `https://api.kimi.com/coding/v1` (overseas: `https://api.kimi.ai/coding/v1`)
+- Model: `kimi-for-coding` · Max Output: `32768` · Effort: `high`
 
-# Critical Rules
-1. ALWAYS enable Legacy Format in Roo Code Advanced settings
-2. NEVER exceed 18 steps without decomposition
-3. ALWAYS load CONTEXT.md first (top bias exploitation)
-4. MONITOR reasoning token ratio (alert if >40%)
-5. USE /cost command every 5-7 prompts
+**Track C — Kimi Code CLI:**
+- `ANTHROPIC_BASE_URL=https://api.kimi.com/coding/` or `OPENAI_BASE_URL=https://api.kimi.com/coding/v1` with your `sk-kimi-...` key
 
-# Context Strategy
-- Load critical files FIRST (first 25% of context)
-- Keep error logs LAST (last 25% of context)
-- Remove redundant information regularly
-- Use /clear before complex tasks
+## 🎯 Key Facts (Sept 2026)
 
-# Reasoning Toggle
-- Medium (default): Complex logic, architecture, refactoring
-- Low (Turbo): Tests, docs, formatting, simple fixes
-
-# Cost Governance
-- Target: $3.00 per 1M tokens
-- Alert: Reasoning tokens >40% of total
-- Reset: Every 18 steps or when cost exceeds budget
-```
+- **Model**: `kimi-for-coding` = K2.8 Preview (1M context); `k3` = flagship (Pro tier, 1M); `k3-256k` ≈ half quota; `kimi-for-coding-highspeed` ≈ 5–6× faster, 3× quota
+- **Billing**: membership quota (5-hour rolling window + monthly total); Extra Usage wallet for overage; Open Platform is a separate pay-as-you-go product ($0.95–$3.00 input / $4.00–$15.00 output per 1M)
+- **Context**: auto-condensation + Smart Code Folding + checkpoints; prompt-cache hygiene beats manual ordering
+- **Horizon**: no fixed step ceiling — measure your own, decompose beyond it, verify continuously
 
 ## 📚 Documentation Guide
 
-### 1. Installation Guide (`INSTALLATION_GUIDE.md`)
-Complete setup instructions including:
-- Roo Code provider configuration
-- Legacy format enablement
-- API verification
-- Troubleshooting
+1. **`INSTALLATION_GUIDE.md`** — Zoo Code / Kimi Code CLI setup, provider tracks, verification
+2. **`PLAYBOOK.md`** — strategy: horizon management, context engineering, cost governance, workflow architecture, benchmarks
+3. **`EVERYDAY_USE_CASES.md`** — 6 worked examples with effort levels, subagent delegation, and token estimates
+4. **`VERSION_CHANGELOG.md`** — full history, v4.x preserved in git tags
 
-### 2. Everyday Use Cases (`EVERYDAY_USE_CASES.md`)
-Practical examples for:
-- Bug fixes (13K tokens, 11-17 steps)
-- Test writing (7K tokens, Turbo mode)
-- Refactoring (28K tokens, requires decomposition)
-- Code review (20K tokens, 12-20 steps)
-- Documentation (7K tokens, Turbo mode)
-- Architecture design (33K tokens, requires decomposition)
+## 🔧 Daily Workflow
 
-### 3. Main Playbook (`PLAYBOOK.md`)
-Comprehensive Kimi K2 configuration including:
-- Token efficiency metrics
-- Configuration guide
-- Cost governance
-- Performance metrics (92% task completion)
-- Learning paths
-
-### 4. Version Changelog (`VERSION_CHANGELOG.md`)
-Complete version history from v4.0.0 to v4.1.0
-
-## 🎯 Key Metrics Achieved
-
-- **Task Completion**: 92% (vs 85% baseline)
-- **Token Efficiency**: 25% reduction vs v4.0.0
-- **Cost**: $3.00 per 1M tokens
-- **Reliability**: 18-step horizon management
-- **Context Optimization**: Top/tail bias exploitation
-
-## 🔧 Configuration Summary
-
-**Critical Settings**:
-- **Endpoint**: `https://api.kimi.com/coding/v1`
-- **Model**: `kimi-for-coding`
-- **Max Output**: `16384`
-- **Reasoning**: `Medium` (toggle to Low for rote tasks)
-- **Legacy Format**: **ENABLED** (critical for compatibility)
-
-## 📖 Usage Workflow
-
-1. **Start**: `/clear` then load critical files first
-2. **Monitor**: Use `/cost` every 5-7 prompts
-3. **Optimize**: Toggle reasoning (Medium/Low) based on task
-4. **Reset**: Clear context every 18 steps or when needed
+1. **Start**: fresh task, AGENTS.md + rules auto-loaded
+2. **Delegate**: Orchestrator mode for multi-part work; subagents return summary + test result
+3. **Verify**: tests after every change; checkpoints for rollback
+4. **Monitor**: task header + History (tokens, estimated cost, subtask roll-up)
 
 ## 📞 Support
 
-For issues or questions:
-- Check `INSTALLATION_GUIDE.md` for troubleshooting
-- Review `EVERYDAY_USE_CASES.md` for examples
-- See `PLAYBOOK.md` for comprehensive configuration
+- Zoo Code docs: https://docs.zoocode.dev
+- Kimi Code docs: https://www.kimi.com/code/docs/en/
+- Open Platform: https://platform.moonshot.ai
 
 ## 📄 License
 
 MIT License
 
-**Version**: 4.1.3
-**Date**: December 12, 2025
+**Version**: 5.0.0
+**Date**: September 30, 2026
 **Repository**: https://github.com/chokmah-me/roo-kimi-playbook
-**Release**: https://github.com/chokmah-me/roo-kimi-playbook/releases/tag/v4.1.3

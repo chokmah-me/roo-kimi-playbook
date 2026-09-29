@@ -1,137 +1,205 @@
-# 📘 Practitioner's Playbook: Kimi For Coding & Roo Code (v4.1.0)
+# 📘 Practitioner's Playbook: Kimi for Coding with Zoo Code & Kimi Code CLI (v5.0.0)
 
-**Core Objective:** Operationalize the **Agent-Tuned** `kimi-for-coding` model to achieve 92% task completion at minimal cost.
+**Core Objective:** Operationalize the **Kimi for Coding** endpoint (currently backed by **Kimi K2.8 Preview**, with **K3** available) for long-horizon agentic work at predictable cost.
+
+> **⚠️ What happened to Roo Code?** Roo Code was discontinued in April 2026 (final release v3.54.0, repo archived). This playbook targets **Zoo Code**, the community successor fork (Apache-2.0, actively maintained), and Moonshot's official **Kimi Code CLI**. Existing `.roo/` config paths work unchanged in Zoo Code.
+
+---
+
+## 🆕 What Changed Since v4.x (Dec 2025)
+
+| v4.x assumption (Dec 2025) | v5.0.0 reality (Sept 2026) |
+| :--- | :--- |
+| Roo Code extension | **Zoo Code** (community successor) or **Kimi Code CLI** |
+| `kimi-for-coding` = K2-era model | Same model ID, now **K2.8 Preview** (upgraded in place Sep 11, 2026); `k3`, `k3-256k`, `kimi-for-coding-highspeed` also available |
+| Max output `16384` | `32768` |
+| Reasoning: Medium/Low toggle | Effort levels `low` / `high` / `max` (third-party `medium` maps to `high`) |
+| Reliability collapses after ~18 steps | Never an official limit; K2 Thinking (Nov 2025) was rated for 200–300 tool calls. Current models target long-horizon agency. Manage *your measured horizon* instead |
+| Manual top/tail file ordering, `/clear` every 5–7 prompts | Zoo Code auto-condensation (v2) + Smart Code Folding + checkpoints handle overflow; prompt-cache hygiene matters more than ordering |
+| ~$3.00 / 1M tokens | The `/coding/` endpoint is **subscription-quota based** (membership). Pay-per-token only applies to the separate Open Platform |
+| "Legacy Format" critical | Use Zoo Code's **native Kimi Code provider (OAuth)** or Moonshot provider; Legacy Format is now only an OpenAI-compatible troubleshooting toggle |
+| `/cost` command | Not built-in. Cost shows in the task header + History (with subtask roll-up) |
 
 ---
 
 ## ⚙️ Part I: The Golden Configuration
 
-**⚠️ Update:** We now exclusively recommend the **Kimi For Coding** endpoint over the Open Platform.
+**Recommended:** Zoo Code's native **Kimi Code provider** (OAuth device-flow sign-in) — no API keys to manage, correct model defaults, first-class K3 support. Requires Zoo Code ≥ 3.72.
 
-### 1. Roo Code Provider Settings
+### Track A — Zoo Code, native Kimi Code provider (recommended)
+
+| Setting | Value | Notes |
+| :--- | :--- | :--- |
+| **Provider** | `Kimi Code` (native) | OAuth device flow; sign in with your Kimi account |
+| **Model ID** | `kimi-for-coding` | Default; runs **K2.8 Preview** (1M context) |
+| **Alt models** | `k3`, `k3-256k`, `kimi-for-coding-highspeed` | `k3` = flagship (Pro tier, 1M only); `k3-256k` ≈ half quota; `highspeed` ≈ 5–6× faster output, 3× quota |
+| **Reasoning effort** | `high` (default) | `low` / `high` / `max`; default for `kimi-for-coding` is `max`, but `high` is the sane daily driver |
+
+### Track B — Zoo Code, OpenAI-compatible (fallback / other tools)
+
 | Setting | Value | Rationale |
 | :--- | :--- | :--- |
-| **Provider** | `OpenAI Compatible` | Standard protocol. |
-| **Base URL** | `https://api.kimi.com/coding/v1` | **Critical:** Use the agent-tuned endpoint. |
-| **API Key** | `sk-kimi-...` | From your Membership Dashboard. |
-| **Model ID** | `kimi-for-coding` | Optimized for 18+ step loops. |
-| **Max Output** | `16384` | The efficiency "sweet spot". |
-| **Reasoning** | `Medium` | Maps to the standard "Thinking" profile. |
+| **Provider** | `OpenAI Compatible` | Standard protocol |
+| **Base URL** | `https://api.kimi.com/coding/v1` | China; overseas: `https://api.kimi.ai/coding/v1` |
+| **API Key** | `sk-kimi-...` | Kimi Code Console (max 5 keys). **Not** an Open Platform key — they are not interchangeable (401 otherwise) |
+| **Model ID** | `kimi-for-coding` | K2.8 Preview |
+| **Max Output** | `32768` | Current model limit |
+| **Reasoning effort** | `high` | If your tool only offers `medium`, it maps to `high`; `ultra`/`xhigh` map to `max` |
+
+### Track C — Kimi Code CLI
+
+Moonshot's official CLI supports the OpenAI- and Anthropic-compatible endpoints natively (no proxies). Configure via environment / config file per the [Kimi Code docs](https://www.kimi.com/code/docs/en/):
+
+```bash
+export ANTHROPIC_BASE_URL="https://api.kimi.com/coding/"   # Anthropic protocol
+export ANTHROPIC_AUTH_TOKEN="sk-kimi-..."
+# or OpenAI protocol:
+export OPENAI_BASE_URL="https://api.kimi.com/coding/v1"
+export OPENAI_API_KEY="sk-kimi-..."
+```
+
+Model selection via `kimi-for-coding` / `k3` / `k3-256k` / `kimi-for-coding-highspeed`.
+
+### ⚠️ Compliance note
+
+Moonshot's terms explicitly prohibit tampering with the client User-Agent. Tools that rely on UA spoofing to access the `/coding/` endpoint risk membership suspension. Use official clients or documented OpenAI/Anthropic-compatible connections only.
 
 ---
 
-## 🧠 Part II: Token Efficiency Strategy
+## 🧠 Part II: Horizon & Context Strategy
 
-### 1. The "18-Step" Horizon
-Empirical data shows reliability drops after 18 steps.
-* **Tactic:** If a task requires >18 steps, the Orchestrator MUST break it into sub-tasks.
+### 1. Horizon management (replaces the "18-step limit")
 
-### 2. Context Bias (Top & Tail)
-Kimi favors the first 25% and last 25% of context.
-* **Tactic:** Load critical architecture files (`CONTEXT.md`) *first*. Keep the current error log *last*.
+The old 18-step ceiling was anecdotal K2-era behavior, not a model property. Moonshot's K2 Thinking (Nov 2025) was rated for **200–300 consecutive tool invocations**; K2.7/K2.8/K3 are positioned for long-horizon agency. There is no verified fixed ceiling for current models.
 
-### 3. The "Tab-Key" Toggle
-You do not need separate profiles for "Reasoning" and "Turbo."
-* **High Value:** Use `Reasoning: Medium` (Default).
-* **Low Value:** Toggle Reasoning to `Low` (Turbo) for rote tasks like writing tests.
+**Tactics that actually matter:**
+- **Measure your own 80% horizon.** Benchmarks show 80%-success horizons run 4–5× shorter than 50% horizons. Track at what task length *your* workflows start needing rework, and decompose anything beyond that.
+- **Self-correction beats length limits.** A 30-step task with intermediate verification (tests, checkpoints) outperforms a 15-step task without it.
+- **Use subagents for isolation.** Delegate heavy exploration/implementation to subagents in isolated context windows; they return a summary + test result ("Boomerang"). This is now native Orchestrator behavior in Zoo Code — not a prompt trick.
+- **Parallelize where independent.** Parallel subagent fan-out costs roughly ~7× the tokens of a single-thread session — spend it only where tasks are genuinely independent.
+
+### 2. Context engineering (replaces manual top/tail ordering)
+
+Zoo Code handles overflow automatically: **Intelligent Context Condensation v2** (LLM summarization near the limit), **Smart Code Folding** (preserves code maps across condensations), and **checkpoints** for rollback. Hand-managing file order against a hard token ceiling is no longer necessary.
+
+**What still matters:**
+- **Prompt-cache hygiene is the highest-leverage habit.** Cached input is ~5× cheaper than uncached on the Open Platform, and rewriting history busts the cache. Keeping full history usually beats aggressive summarization on cost *and* quality. **Compact rarely and deliberately.**
+- **Stable prefixes.** Keep AGENTS.md / rules / large static docs early and unchanged in the session; don't edit them mid-task.
+- **Critical instructions belong in files, not chat.** Lost-in-the-middle bias is real — persistent rules go in `AGENTS.md` and `.roo/rules/`, not buried mid-conversation.
+- **Cap tool output.** Truncating oversized tool outputs is the cheapest single context saving (measured ~38% cost-per-turn reduction in 2026 evals).
 
 ---
 
 ## 💰 Part III: Cost Governance
 
-**Pricing:** ~0.3¢ / 1k tokens ($3.00 / 1M).  
-**Alert Rule:** If `reasoning_tokens` > 40% of total completion, you are over-thinking. Clamp `max_tokens` or toggle to Turbo.
+### Kimi Code endpoint (subscription)
+
+The `/coding/` endpoint bills against **membership quota**, not per token:
+- Quota windows: rolling 5-hour rate window + monthly total (weekly cap removed for new plans)
+- Tiers (legacy names → new): Andante/Go ~$19, Moderato/Plus ~$39, Allegretto/Pro ~$99, Allegro ~$199 per month. Kimi Code requires **Plus** and above; 1M context on `k3` / `highspeed` requires **Pro** and above.
+- Optional **Extra Usage** wallet (pay-as-you-go top-up) for overage.
+- ⚠️ New subscriptions were briefly paused in July 2026 (K3 GPU capacity) — check current availability on the membership page.
+- Quota burn differs by model: `k3` burns fast; `k3-256k` ~half; `highspeed` 3×.
+
+### Open Platform (pay-as-you-go, separate product)
+
+| Model | Input / 1M | Cached input / 1M | Output / 1M |
+| :--- | :--- | :--- | :--- |
+| Kimi K3 | $3.00 | $0.30 | $15.00 |
+| Kimi K2.7 Code | $0.95 | $0.19 | $4.00 |
+| Kimi K2.6 | $0.95 | $0.16 | $4.00 |
+
+Batch API: 60% of standard (K2.6/K2.7 Code; K3 not supported). **Open Platform keys do not work on `/coding/` and vice versa.**
+
+### Alert rules (v5)
+
+- **Quota rhythm**: if you keep hitting the 5-hour window, you are under-tiered or over-delegating — route rote work to `low` effort, and reserve `k3` / `max` effort for problems that actually need them.
+- **Fan-out discipline**: parallel subagents multiply cost; cap concurrency at 2–3 unless tasks are independent and large.
+- **Track per task**: Zoo Code shows tokens + estimated cost in the task header and History (subtask roll-up included). Set input/output prices in Model Configuration to make estimates accurate.
 
 ---
 
-## ✅ Part IV: The "Go-Live" Checklist
+## 🏗️ Part IV: Workflow Architecture
 
-Before starting production work, verify:
+### Modes (Zoo Code)
 
-1. [ ] **Endpoint verified**: `api.kimi.com/coding/v1` accessible.
-2. [ ] **Model selected**: `kimi-for-coding` configured.
-3. [ ] **Output clamped**: Max tokens set to `16384`.
-4. [ ] **Legacy format enabled**: Roo Code Advanced settings.
-5. [ ] **API key valid**: Test authentication successful.
-6. [ ] **Context strategy understood**: Top/tail bias exploitation.
-7. [ ] **Reasoning toggle protocol**: Know when to use Medium vs Low.
-8. [ ] **Cost monitoring**: Understand `/cost` command usage.
-9. [ ] **Task decomposition**: Ready to break tasks >18 steps.
-10. [ ] **Documentation reviewed**: Familiar with optimization strategies.
+| Mode | Use for | Suggested model/effort |
+| :--- | :--- | :--- |
+| **Architect** | Planning, schema/PRD analysis, read-only design | `k3` or `kimi-for-coding` @ `high`/`max` |
+| **Code** | Implementation, edits, test runs | `kimi-for-coding` @ `high` |
+| **Ask** | Q&A, explanation, no edits | `kimi-for-coding` @ `low` |
+| **Debug** | Root-cause analysis | `kimi-for-coding` @ `high` |
+| **Orchestrator** | Decomposition, delegation, `new_task` subagents | plan on strong model, delegate freely |
 
----
+Modes support **per-mode API profiles** (v3.48+ lock toggle), and profiles are **sticky per subtask** — a subagent keeps the model it was spawned with even if you switch profiles mid-task.
 
-## 📊 Performance Metrics
+### Verification loops (now structural, not prompt tricks)
 
-**Achieved Results:**
-- **Task completion rate**: 92% (vs 85% baseline)
-- **Token efficiency**: 25% reduction vs v4.0.0
-- **Cost reduction**: ~$0.75 per 1M tokens saved
-- **Reliability**: Maintained through 18-step horizon management
-- **Context utilization**: Optimized through bias exploitation
+- **Tests after every behavior change.** Make "run the tests" the default closing step of a Code-mode task.
+- **Checkpoints** (shadow-git): created per task and per subtask; roll back instead of arguing with a derailed session.
+- **Destructive Command Guard**: Zoo Code flags dangerous shell commands — keep it enabled.
+- **Custom commands**: put repeatable workflows (e.g. a cost check) in `.roo/commands/*.md` with frontmatter; run `/init` to generate `AGENTS.md` + mode-specific rules.
 
-**Validation Data:**
-- **Test sessions**: 100+ production tasks
-- **Task types**: Refactoring, debugging, architecture, testing
-- **Success criteria**: Functional completion + token budget adherence
-- **Baseline comparison**: v4.0.0 Claude Code workflows
+### Skills & AGENTS.md
+
+- **AGENTS.md** is the cross-tool standard (25+ tools read it; Zoo Code loads it recursively). One file, project root, kept current.
+- **Skills** (`SKILL.md` bundles) are an open standard — use them for reusable capabilities; bodies load on demand (progressive disclosure).
 
 ---
 
-## 🎓 Learning Path
+## ✅ Part V: The "Go-Live" Checklist
 
-**Beginner (Sessions 1-2):**
-1. Read this playbook thoroughly
-2. Configure Roo Code with Kimi settings
-3. Complete go-live checklist
-4. Run simple test task (5-10 steps)
-5. Monitor token usage with `/cost`
+1. [ ] **Harness installed**: Zoo Code (≥ 3.72) or Kimi Code CLI; Roo Code replaced if still present (frozen, no patches).
+2. [ ] **Auth working**: native Kimi Code provider OAuth sign-in, or `sk-kimi-...` key verified against `/coding/v1`.
+3. [ ] **Model selected**: `kimi-for-coding` default; `k3` for hard problems (Pro tier); `highspeed` when latency matters.
+4. [ ] **Max output 32768** (OpenAI-compatible track only — native provider sets this for you).
+5. [ ] **Effort protocol understood**: `low` rote / `high` daily driver / `max` architecture & gnarly debugging.
+6. [ ] **AGENTS.md present**: run `/init` or hand-write; rules live in files, not chat.
+7. [ ] **Checkpoints enabled** and Destructive Command Guard on.
+8. [ ] **Quota understood**: your tier, the 5-hour window, per-model burn rates.
+9. [ ] **Horizon baseline noted**: how long your tasks run before rework — decompose beyond it.
+10. [ ] **Cache hygiene**: stable session prefixes; no mid-session rule edits; compact rarely.
 
-**Intermediate (Sessions 3-10):**
-1. Practice context bias exploitation
-2. Experiment with reasoning toggles
-3. Decompose tasks approaching 18 steps
-4. Optimize context loading order
-5. Track cost savings vs baseline
+---
 
-**Advanced (Sessions 10+):**
-1. Develop custom task decomposition strategies
-2. Create project-specific optimization patterns
-3. Share best practices with team members
-4. Contribute improvements back to playbook
-5. Measure and optimize for specific task categories
+## 📊 Benchmark Context & Metrics
+
+**External benchmarks (Sept 2026):** SWE-bench Verified — Kimi K3 **93.4%**, frontier cluster ~96–97%. Verified is near saturation; the informative signals are now SWE-bench Pro, Terminal-Bench 2.0, and METR time-horizons (50% horizons for frontier models are in the multi-hour range and doubling every ~4 months).
+
+**Track these yourself** (per project, per month):
+
+| Metric | Target | How to measure |
+| :--- | :--- | :--- |
+| Task success without rework | >85% | Successful sessions / total |
+| Cost per completed task | trend down | Task header + History |
+| Quota rhythm | never hit 5-hour wall | membership dashboard |
+| Subagent fan-out ratio | ≤3× single-thread cost | History roll-up |
+| Rework rate beyond horizon | declining | your own log |
+
+The v4.x "92% completion / 25% token reduction" figures were self-reported from a 100-task sample on the K2-era model; treat them as historical, not current guarantees.
 
 ---
 
 ## 🔧 Troubleshooting
 
-**Connection Issues:**
+**401 Unauthorized:**
+- Wrong key type: Open Platform keys fail on `/coding/` and vice versa.
+- Entitlement: `k3` and 1M context require Pro tier — 401 is also used for plan-entitlement failures.
+
+**Garbled responses / tool-call format errors (OpenAI-compatible track only):**
+- Try the "Legacy Format" toggle in Advanced settings. In 2026 this could not be confirmed as required — the native Kimi Code provider avoids the question entirely. Prefer Track A.
+
+**Context degradation on long sessions:**
+- Don't manually `/clear` — let condensation handle it; roll back to a checkpoint if the session derails; check that mid-session rule edits haven't busted your prompt cache.
+
+**Quota exhaustion:**
+- Check the 5-hour window vs monthly total on the membership dashboard; move rote work to `low` effort; defer `k3`/`max` to where it pays.
+
+**Endpoint verification:**
 ```bash
-# Verify endpoint
-curl -v https://api.kimi.com/coding/v1/models \
-  -H "Authorization: Bearer YOUR_KEY"
-
-# Check network connectivity
-ping api.kimi.com
+curl -H "Authorization: Bearer sk-kimi-..." \
+     https://api.kimi.com/coding/v1/models
 ```
-
-**High Token Usage:**
-- Review context for redundant information
-- Apply top/tail bias optimization
-- Toggle to Turbo for rote tasks
-- Decompose complex tasks
-
-**Poor Task Completion:**
-- Verify 18-step horizon not exceeded
-- Check context loading order
-- Ensure critical files loaded first
-- Monitor reasoning token ratio
-
-**Cost Overruns:**
-- Enable cost alerts in Roo Code
-- Review reasoning token percentages
-- Optimize context management
-- Use Turbo mode strategically
 
 ---
 
@@ -141,7 +209,7 @@ MIT License - see LICENSE file for details.
 
 ---
 
-**Version**: 4.1.0  
-**Date**: December 12, 2025  
-**Repository**: https://github.com/chokmah-me/roo-kimi-playbook  
-**Citation**: Practitioner's Playbook: Agentic Mesh Configuration for Kimi K2 and Roo Code
+**Version**: 5.0.0
+**Date**: September 30, 2026
+**Repository**: https://github.com/chokmah-me/roo-kimi-playbook
+**Targets**: Zoo Code (community successor to Roo Code) + Kimi Code CLI, via the Kimi for Coding endpoint (K2.8 Preview / K3)

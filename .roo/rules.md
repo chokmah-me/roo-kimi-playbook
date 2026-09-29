@@ -1,110 +1,60 @@
-# Roo Code Rules - Kimi K2 Configuration
+# Zoo Code Rules - Kimi for Coding Configuration (v5.0.0)
 
 ## Provider Settings
-**Provider**: OpenAI Compatible  
-**Base URL**: https://api.kimi.com/coding/v1  
-**Model**: kimi-for-coding  
-**Max Output**: 16384  
-**Reasoning**: Medium
+**Recommended**: Native `Kimi Code` provider (OAuth, Zoo Code ≥ 3.72) or native `Moonshot` provider
+**Fallback (OpenAI Compatible)**:
+- Base URL: `https://api.kimi.com/coding/v1` (overseas: `https://api.kimi.ai/coding/v1`)
+- Model: `kimi-for-coding` (K2.8 Preview) · Max Output: `32768` · Effort: `high`
+- Model IDs: `kimi-for-coding` (default) · `k3` / `k3-256k` (Pro tier) · `kimi-for-coding-highspeed`
 
 ## Critical Rules
-1. **ALWAYS** enable Legacy Format in Roo Code Advanced settings
-2. **NEVER** exceed 18 steps without decomposition
-3. **ALWAYS** load CONTEXT.md first (top bias exploitation)
-4. **MONITOR** reasoning token ratio (alert if >40%)
-5. **USE** `/cost` command every 5-7 prompts
+1. **NEVER** tamper with the client User-Agent — Kimi Code terms prohibit it (membership suspension risk)
+2. **NEVER** mix key types: Open Platform keys fail on `/coding/` and vice versa (401)
+3. **ALWAYS** keep durable rules in AGENTS.md / `.roo/rules/`, not mid-conversation
+4. **ALWAYS** verify: run tests after every behavior change; roll back to a checkpoint on derailment
+5. **MONITOR** quota burn: task header + History (subtask roll-up); set model prices for accurate estimates
 
-## Context Management Strategy
-**Top Bias Exploitation (First 25%):**
-- Load `CONTEXT.md` first for architectural guidance
-- Load critical configuration files early
-- Place high-priority instructions at session start
+## Effort Protocol
+- `low`: formatting, boilerplate, docs, mechanical test generation
+- `high`: daily driver — implementation, debugging, review (default)
+- `max`: architecture, ambiguous multi-system problems
+- Mapping from third-party tools: `medium` → `high`, `ultra`/`xhigh` → `max`, `none` → thinking off
 
-**Tail Bias Exploitation (Last 25%):**
-- Keep current error logs at context end
-- Recent conversation history
-- Immediate task reminders
+## Context Strategy (harness-managed)
+- Auto-condensation v2 + Smart Code Folding handle overflow — no manual `/clear` rituals; start a new task per unit of work
+- Load large stable files early and don't edit rules/AGENTS.md mid-session (cache invalidation)
+- Read files just-in-time; grep for ranges instead of dumping files > ~500 lines
+- Cap oversized tool outputs — cheapest single context saving (~38% cost/turn in 2026 evals)
+- Durable designs/decisions go in `docs/` files, not chat
 
-**Context Window Limits:**
-- Do not read files > 500 lines entirely
-- Use grep/sed for specific ranges
-- Keep routine tasks under 8k tokens
-- Expand to full 200k+ only for global reviews
-
-## Reasoning Toggle Protocol
-**Medium Reasoning (Default):**
-- Complex refactoring tasks
-- Architecture design decisions
-- Multi-file coordination
-- Performance optimization
-
-**Low Reasoning (Turbo):**
-- Test writing
-- Code formatting
-- Documentation generation
-- Simple bug fixes
+## Horizon Management (replaces the 18-step rule)
+- No fixed step ceiling: current models are rated for hundreds of tool calls
+- Measure your own rework threshold; decompose work beyond it
+- Self-correction > length limits: verify intermediate results on long tasks
+- Delegate heavy/isolated work to subagents (Orchestrator `new_task`); they return summary + test results
+- Parallel subagents multiply tokens ~3–7× — only for genuinely independent work, cap at 2–3 concurrent
 
 ## Financial Safety Rails
-**Daily Budget:** $5.00/day hard limit on API key  
-**Balance Alert:** $10.00 threshold for low balance warnings  
-**Cost Monitoring:** Track per-task cost, alert if exceeds $0.75  
-**Target Rate:** $3.00 per 1M tokens
+- **Kimi Code is subscription-quota**: 5-hour rolling window + monthly total (Plus tier minimum; Pro for `k3` 1M)
+- **Burn rates**: `k3` fast · `k3-256k` ≈ half · `highspeed` 3× — reserve `k3`/`max` for problems that need them
+- **Extra Usage wallet**: keep topped up for deadline bursts
+- **Open Platform (separate)**: K3 $3.00/$15.00 per 1M; K2.7 Code $0.95/$4.00; cache-hit input ~$0.16–$0.30
+- **Alert**: hitting the 5-hour window repeatedly = under-tiered or over-delegating
 
 ## Mode Engineering
-**Architect Mode (Kimi K2 Thinking):**
-- Complex reasoning, planning, system design
-- High context, read-only operations
-- Use for: Analyzing PRDs, designing schemas, planning refactors
-
-**Code Mode (Kimi K2 Turbo):**
-- Fast implementation, syntax, execution
-- High context, read/write operations
-- Use for: Writing code, executing tests, fixing lint errors
-
-**Orchestrator Mode (Kimi K2 Thinking):**
-- Task management, delegation, workflow coordination
-- Low context, meta-only operations
-- Use for: Managing multi-step workflows, maintaining state
-
-## Prompt Caching Strategy
-**Cache Hit Rate Target:** >75% for optimal cost reduction
-
-**Optimization Techniques:**
-- **Stable System Prompts:** Avoid editing .clinerules during active sessions
-- **Linear History:** Use Roo Code's natural linear history for caching
-- **Context Loading Order:** Load large static files first to maximize cache hits
-- **Cache Invalidation:** Avoid "Delete Message" feature which invalidates cache
-
-**Cost Impact:**
-- Input (Cache Miss): $0.60 / 1M tokens
-- Input (Cache Hit): $0.15 / 1M tokens (75% discount)
-- Output: $2.50 / 1M tokens
+- **Architect** (`max`/`high`): planning, design, read-only analysis
+- **Code** (`high`): implementation, edits, test runs
+- **Ask** (`low`): Q&A and explanation
+- **Debug** (`high`): root-cause analysis
+- **Orchestrator**: decomposition + delegation; per-mode API profiles, sticky per subtask
 
 ## Error Handling & Loop Prevention
-**Stop Conditions:**
-- If tool output contradicts internal assumption: STOP and ask user
-- Do not retry same command more than once
-- If repeating sequence > 3 times: STOP and request help
+- If tool output contradicts your assumption: STOP and report — don't force the narrative
+- Never retry the same failed command more than once without changing something
+- Repeating sequence > 3 times: STOP, roll back to checkpoint, reassess
+- Destructive Command Guard stays enabled
 
-**Error Analysis:**
-- Analyze error messages in detail
-- Do not blindly retry failed commands
-- Provide clear error context to user
-
-## Hybrid Model Strategy
-**Recommended Model Mix:**
-- **Kimi K2 Thinking:** Architecture, orchestration, complex debugging (reasoning tasks)
-- **Kimi K2 Turbo:** Code implementation, syntax fixes, test writing (speed tasks)
-- **DeepSeek V3:** Alternative for pure coding when available
-
-**TCO Optimization:**
-- Use Kimi's reasoning for planning
-- Use faster models for execution
-- Typical cost reduction: 50-75%
-
-## Performance Targets
-**Success Rate:** >95% within 18 sequential tool calls  
-**Failure Threshold:** 28+ steps (degrade rapidly)  
-**Task Completion:** 92% single-attempt benchmark  
-**Token Efficiency:** 25% reduction vs baseline  
-**Cost per Task:** $0.50-$0.75 typical range
+## Skills & Commands
+- AGENTS.md is the cross-tool standard — keep it current (`/init` to bootstrap)
+- Reusable workflows go in `.roo/commands/*.md` (frontmatter: description, argument-hint, mode)
+- Skills (`SKILL.md`) for loadable capabilities — bodies load on demand

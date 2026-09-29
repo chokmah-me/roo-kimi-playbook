@@ -1,376 +1,230 @@
-# Everyday Use Cases - Kimi K2 & Roo Code v4.1.0
+# Everyday Use Cases - Kimi for Coding, Zoo Code & Kimi Code CLI v5.0.0
 
-**Practical examples for common development tasks**
+**Practical examples for common development tasks** (September 2026)
 
 ---
 
 ## 🚀 Quick Reference
 
-| Task Type | Reasoning | Expected Steps | Token Budget |
-|-----------|-----------|----------------|--------------|
-| **Bug Fix** | Medium | 5-10 | 5K-10K |
-| **Test Writing** | Low (Turbo) | 3-8 | 3K-8K |
-| **Refactoring** | Medium | 8-15 | 10K-20K |
-| **Code Review** | Medium | 5-12 | 8K-15K |
-| **Documentation** | Low (Turbo) | 3-6 | 4K-8K |
-| **Architecture** | Medium | 10-18 | 15K-30K |
+| Task Type | Mode | Effort | Subagents? | Token Budget (single-thread) |
+|-----------|------|--------|-----------|------------------------------|
+| **Bug Fix** | Debug/Code | `high` | No | 8K–20K |
+| **Test Writing** | Code | `low` | No | 4K–10K |
+| **Refactoring** | Orchestrator → Code | `high` | Yes — isolate the extraction | 15K–40K total |
+| **Code Review** | Ask/Architect | `high` | Yes — parallel per-file reviews | 12K–30K |
+| **Documentation** | Code | `low` | No | 4K–8K |
+| **Architecture** | Architect → Orchestrator | `max` → `high` | Yes — research subagents | 25K–60K total |
+
+> There is **no fixed step limit**. Budgets above assume a single-thread session; parallel subagent fan-out typically multiplies total tokens ~3–7× — spend it only where tasks are independent.
 
 ---
 
 ## 🐛 Use Case 1: Bug Fix
 
 ### Scenario
-User reports: "Button click doesn't update the counter"
+"Button click doesn't update the counter"
 
 ### Session Flow
 
-**Step 1: Load Context (Top Bias)**
-```bash
-/clear
-# Load relevant files FIRST
-src/components/Counter.tsx
-src/store/counterSlice.ts
-src/App.tsx
+**Step 1: Context arrives automatically**
+AGENTS.md and `.roo/rules` load at task start. The failing test output or error log goes in the *first* message — recent context is weighted most heavily.
 
-# Current error from logs
-# "TypeError: Cannot read property 'count' of undefined"
+**Step 2: Triage (Debug mode, effort `high`)**
 ```
-
-**Step 2: Triage**
-```bash
-# Ask: "Analyze the counter update flow and identify the bug"
-# Expected: 5-8 steps, ~6K tokens
+Analyze the counter update flow and identify the root cause of:
+"TypeError: Cannot read property 'count' of undefined"
 ```
+Agent reads the relevant files just-in-time; cap any single file read (grep for ranges rather than dumping 2000 lines).
 
-**Step 3: Implement Fix**
-```bash
-# Ask: "Fix the undefined property error"
-# Expected: 3-5 steps, ~4K tokens
+**Step 3: Fix (Code mode, effort `high`)**
+```
+Fix the root cause. Minimal diff; no refactors.
 ```
 
 **Step 4: Verify**
-```bash
-# Ask: "Write a test to verify the fix"
-# Toggle to Low reasoning for test writing
-# Expected: 3-4 steps, ~3K tokens
+```
+Run the counter tests and confirm the fix.
 ```
 
-**Total**: ~13K tokens, 11-17 steps ✅ (within 18-step limit)
+**Total**: ~10K–15K tokens ✅ · If the session derails, roll back to the checkpoint and retry with the error log — don't push a poisoned conversation forward.
 
 ---
 
 ## 🧪 Use Case 2: Test Writing
 
 ### Scenario
-Need to add unit tests for new API endpoint
+Add unit tests for a new API endpoint
 
 ### Session Flow
 
-**Step 1: Load Context**
-```bash
-/clear
-src/api/userEndpoints.ts
-src/types/User.ts
+**Step 1: Load context**
+```
+Read src/api/userEndpoints.ts and src/types/User.ts, then propose a test plan before writing anything.
 ```
 
-**Step 2: Turbo Mode for Tests**
-```bash
-# Toggle Reasoning to Low (Turbo)
-# Ask: "Generate comprehensive tests for userEndpoints.ts"
-# Expected: 5-7 steps, ~5K tokens
+**Step 2: Generate (Code mode, effort `low`)**
+```
+Generate the test suite following the plan and existing test conventions.
+```
+`low` effort is right for mechanical generation against a clear spec.
+
+**Step 3: Run and close gaps (effort `high` if failures are subtle)**
+```
+Run the tests. For each failure, diagnose and fix — don't paper over assertions.
 ```
 
-**Step 3: Review and Refine**
-```bash
-# Ask: "Check test coverage and add edge cases"
-# Expected: 2-3 steps, ~2K tokens
-```
-
-**Total**: ~7K tokens, 7-10 steps ✅ (very efficient)
+**Total**: ~6K–10K tokens ✅ — one of the cheapest, highest-confidence tasks. Batch several test files in one session for a stable prompt cache.
 
 ---
 
-## ♻️ Use Case 3: Refactoring
+## ♻️ Use Case 3: Refactoring (Orchestrator + Subagent)
 
 ### Scenario
-Extract reusable component from monolithic file
+Extract a reusable component from a 500+ line monolithic file
 
 ### Session Flow
 
-**Step 1: Load and Analyze**
-```bash
-/clear
-# Load large file first (top bias)
-src/components/Dashboard.tsx (500+ lines)
+**Step 1: Plan (Architect mode, effort `max`)**
+```
+Read src/components/Dashboard.tsx and identify the best extraction candidates.
+Propose an extraction plan: new component boundaries, prop interfaces, import updates.
+```
+Human reviews the plan — this is the cheapest place to catch a mistake.
 
-# Ask: "Identify the best extraction candidates"
-# Expected: 6-8 steps, ~8K tokens
+**Step 2: Delegate (Orchestrator mode)**
+```
+Spawn a subtask: extract UserProfile per the approved plan, run typecheck and tests, and return a summary + test results.
+```
+The subagent works in an isolated context window and returns only the summary — your orchestrator context stays clean (the "Boomerang" pattern, now native).
+
+**Step 3: Review the diff (Code mode, effort `high`)**
+```
+Review the subtask's diff for behavior changes and convention drift.
 ```
 
-**Step 2: Plan Extraction**
-```bash
-# Ask: "Create extraction plan for UserProfile section"
-# Expected: 4-6 steps, ~6K tokens
-```
+**Total**: ~25K–40K tokens with fan-out ✅ · Rollback safety: the subtask ran on its own checkpoint.
 
-**Step 3: Execute Extraction**
-```bash
-# Ask: "Extract UserProfile into separate component"
-# Expected: 8-12 steps, ~12K tokens
-```
-
-**Step 4: Update Imports**
-```bash
-# Ask: "Update all imports in Dashboard.tsx"
-# Toggle to Low reasoning for this rote task
-# Expected: 2-3 steps, ~2K tokens
-```
-
-**Total**: ~28K tokens, 20-29 steps ⚠️ (exceeds 18-step limit)
-
-**Solution**: Decompose into sub-tasks:
-- Sub-task 1: Analysis (8 steps)
-- Sub-task 2: Extraction (12 steps) 
-- Sub-task 3: Import updates (3 steps)
+**When *not* to delegate**: if the extraction touches 2 files and takes 10 minutes, do it directly — subagent overhead isn't free.
 
 ---
 
-## 👀 Use Case 4: Code Review
+## 👀 Use Case 4: Code Review (Parallel Subagents)
 
 ### Scenario
-Review pull request with 5 files changed
+Review a PR with 5 changed files
 
 ### Session Flow
 
-**Step 1: Load Files Strategically**
-```bash
-/clear
-# Load most critical files first
-src/core/auth.ts
-src/middleware/protection.ts
-
-# Then supporting files
-src/routes/api.ts
-src/utils/validation.ts
-src/tests/auth.test.ts
+**Step 1: Triage the diff yourself (Ask mode, effort `high`)**
+```
+Summarize what this PR changes and which files carry the behavioral risk.
 ```
 
-**Step 2: Review Architecture**
-```bash
-# Ask: "Review authentication flow for security issues"
-# Expected: 6-10 steps, ~10K tokens
+**Step 2: Parallel review (Orchestrator mode)**
+```
+Spawn one subtask per high-risk file: review for security, correctness, and convention violations. Return findings as a ranked list with file:line references.
+```
+Subagents review in parallel, each in an isolated context — total latency ≈ one review, cost ≈ 5.
+
+**Step 3: Synthesize (effort `high`)**
+```
+Merge the findings, deduplicate, and produce the final review comment.
 ```
 
-**Step 3: Review Implementation**
-```bash
-# Ask: "Check for best practices and suggest improvements"
-# Expected: 4-7 steps, ~7K tokens
-```
-
-**Step 4: Summarize Findings**
-```bash
-# Ask: "Create code review summary with action items"
-# Expected: 2-3 steps, ~3K tokens
-```
-
-**Total**: ~20K tokens, 12-20 steps ✅ (manageable with monitoring)
+**Total**: ~20K–30K tokens ✅ · Budget tip: cap concurrency at 2–3 for quota-sensitive accounts; the 4th and 5th reviews rarely change the outcome.
 
 ---
 
 ## 📝 Use Case 5: Documentation
 
 ### Scenario
-Document new API endpoint
+Document a new API endpoint
 
 ### Session Flow
 
-**Step 1: Load Context**
-```bash
-/clear
-src/routes/newEndpoint.ts
-src/types/ApiResponses.ts
+**Step 1: Generate (Code mode, effort `low`)**
+```
+Read src/routes/newEndpoint.ts and generate API documentation with request/response examples, following docs/ existing style.
 ```
 
-**Step 2: Turbo Mode for Docs**
-```bash
-# Toggle Reasoning to Low
-# Ask: "Generate API documentation for newEndpoint.ts"
-# Expected: 4-6 steps, ~5K tokens
+**Step 2: Self-check (effort `low`)**
+```
+Verify every documented field, status code, and example against the actual implementation. Fix mismatches.
 ```
 
-**Step 3: Format and Review**
-```bash
-# Ask: "Format documentation and add examples"
-# Expected: 2-3 steps, ~2K tokens
-```
-
-**Total**: ~7K tokens, 6-9 steps ✅ (very efficient)
+**Total**: ~5K–8K tokens ✅ — run in a batch with other docs tasks to keep the cache warm.
 
 ---
 
 ## 🏗️ Use Case 6: Architecture Design
 
 ### Scenario
-Design new microservice for user notifications
+Design a new microservice for user notifications
 
 ### Session Flow
 
-**Step 1: Load Context (Top Bias)**
-```bash
-/clear
-# Architecture and existing patterns first
-docs/ARCHITECTURE.md
-src/services/README.md
-
-# Current related services
-src/services/emailService.ts
-src/services/pushService.ts
+**Step 1: Research (Architect mode, effort `max`)**
+```
+Read docs/ARCHITECTURE.md, src/services/README.md, and the existing email/push services. Summarize the patterns this service must follow.
 ```
 
-**Step 2: Requirements Gathering**
-```bash
-# Ask: "Based on existing patterns, design notification microservice"
-# Expected: 8-12 steps, ~15K tokens
+**Step 2: Design (Architect mode, effort `max`)**
+```
+Design the notification microservice: interfaces, data flow, failure modes, scaling characteristics. Present 2 options with trade-offs.
 ```
 
-**Step 3: Design Review**
-```bash
-# Ask: "Review design for scalability and maintainability"
-# Expected: 5-8 steps, ~10K tokens
+**Step 3: Validation subagent**
+```
+Spawn a subtask: adversarially review this design for scalability, security, and operational blind spots. Return a critique.
 ```
 
-**Step 4: Implementation Plan**
-```bash
-# Ask: "Create step-by-step implementation plan"
-# Expected: 4-6 steps, ~8K tokens
+**Step 4: Implementation plan (Orchestrator mode)**
+```
+Break the approved design into independently testable work packages, each small enough to complete in one session.
 ```
 
-**Total**: ~33K tokens, 17-26 steps ⚠️ (approaching limit)
-
-**Solution**: Stop at 18 steps, document progress, continue in new session
+**Total**: ~30K–60K tokens across sessions ✅ · The design lives in a file (`docs/DESIGN-notifications.md`), not in chat — future sessions read the file, keeping context cheap and the prompt cache stable.
 
 ---
 
 ## 💡 Best Practices for Everyday Use
 
-### 1. **Start Every Session with `/clear`**
-```bash
-/clear
-# Then load only what you need
-```
+### 1. Let the harness manage context
+Auto-condensation and Smart Code Folding handle overflow. Don't run ritual `/clear`s; start a **new task** per unit of work instead. Don't edit rules or AGENTS.md mid-session — it busts the prompt cache.
 
-### 2. **Load Files Strategically**
-```bash
-# GOOD: Load critical files first
-src/core/auth.ts
-src/middleware/protection.ts
+### 2. Put durable knowledge in files
+Designs, decisions, and conventions go in `docs/` + AGENTS.md. Chat is for the current task only.
 
-# AVOID: Loading everything at once
-src/**/*  # Too much context, wastes tokens
-```
+### 3. Choose effort deliberately
+- `low`: formatting, boilerplate, docs, mechanical tests
+- `high`: daily driver — implementation, debugging, review
+- `max`: architecture, ambiguous multi-system problems
 
-### 3. **Monitor Every 5-7 Prompts**
-```bash
-/cost
-# Check: Total tokens, reasoning ratio, budget remaining
-```
+### 4. Delegate for isolation, not for show
+Subagents pay off for: parallel independent work, heavy-context reads (return summary only), disposable experiments. They cost ~3–7× the tokens of a single-thread run.
 
-### 4. **Toggle Reasoning Appropriately**
-```bash
-# Complex logic: Medium (default)
-# Test writing: Low (Turbo)
-# Documentation: Low (Turbo)
-# Bug fixes: Medium
-# Code review: Medium
-```
+### 5. Verify, then verify again
+Tests after every behavior change; checkpoints before risky operations; Destructive Command Guard stays enabled.
 
-### 5. **Reset Before Complex Tasks**
-```bash
-# Before starting something big:
-/clear
-# Load fresh context
-# This prevents context degradation
-```
-
-### 6. **Decompose Large Tasks**
-```bash
-# Instead of: "Build entire feature"
-# Do: "Design API schema" (sub-task 1)
-# Then: "Implement endpoint" (sub-task 2)
-# Then: "Add tests" (sub-task 3)
-```
+### 6. Measure your own horizon
+Log where sessions start needing rework. Decompose work beyond *your* threshold — nobody else's number (18 steps or otherwise) applies to your repo.
 
 ---
 
-## 📊 Cost Tracking Examples
+## 📊 Cost Tracking
 
-### Daily Development (4 hours)
-- **Bug fixes**: 3 sessions × 10K = 30K tokens
-- **Test writing**: 2 sessions × 7K = 14K tokens
-- **Refactoring**: 1 session × 15K = 15K tokens
-- **Total**: ~59K tokens = $0.18
+Costs show in the **task header** (tokens in/out + estimated $) and aggregate in **History**, including subtask roll-up. Set input/output prices in Model Configuration for accurate estimates.
 
-### Weekly Sprint (20 hours)
-- **Daily work**: 59K × 5 days = 295K tokens
-- **Code reviews**: 5 × 12K = 60K tokens
-- **Architecture**: 2 × 20K = 40K tokens
-- **Total**: ~395K tokens = $1.19
+### Reference points (Sept 2026)
 
-### Monthly (80 hours)
-- **Weekly average**: 395K × 4 weeks = 1.58M tokens
-- **Buffer for complex tasks**: +0.5M tokens
-- **Total**: ~2.08M tokens = $6.24
+- **Kimi Code membership**: quota-based — 5-hour rolling window + monthly total. Practical limit is your tier, not a dollar meter. `k3` burns fastest; `k3-256k` ≈ half; `highspeed` ≈ 3×.
+- **Open Platform pay-as-you-go** (separate product): K3 $3.00 in / $15.00 out per 1M; K2.7 Code $0.95 / $4.00; cache-hit input ~$0.16–$0.30.
 
-**Budget target**: $5-10 per month for heavy usage
+### Rough monthly shape (individual, daily use)
 
----
-
-## 🎯 Session Templates
-
-### Template 1: Quick Bug Fix
-```bash
-/clear
-# Load: Affected files
-# Ask: "Fix bug in [specific location]"
-# Test: "Verify fix works"
-# Cost: ~10K tokens
-```
-
-### Template 2: Feature Implementation
-```bash
-/clear
-# Load: Related files, architecture docs
-# Ask: "Design [feature] following existing patterns"
-# Steps: 1-2 (stop at 18, continue in new session)
-# Cost: ~15K tokens per session
-```
-
-### Template 3: Code Review
-```bash
-/clear
-# Load: Changed files (most important first)
-# Ask: "Review for security and best practices"
-# Summarize: "Create review summary"
-# Cost: ~12K tokens
-```
-
----
-
-## ⚡ Efficiency Tips
-
-### Maximize Token Efficiency
-1. **Use `/clear` frequently** - Every 5-7 prompts or 18 steps
-2. **Load files strategically** - Critical files first, then supporting
-3. **Toggle Reasoning** - Low for rote, Medium for complex
-4. **Monitor with `/cost`** - Track usage patterns
-5. **Decompose large tasks** - Stay under 18-step limit
-
-### Minimize Costs
-1. **Batch similar tasks** - Group test writing, documentation
-2. **Use Turbo mode** - Low reasoning for simple operations
-3. **Optimize context** - Remove redundant information
-4. **Reuse patterns** - Don't reinvent solutions
-5. **Plan before coding** - Reduces rework
+- Mostly `kimi-for-coding` @ `high`, occasional `k3`: comfortably within **Plus** tier
+- Daily `k3` + parallel subagent fan-out: plan for **Pro**
+- Keep the Extra Usage wallet topped up if a deadline week might burst the quota
 
 ---
 
@@ -380,14 +234,14 @@ Track these for your projects:
 
 | Metric | Target | How to Measure |
 |--------|--------|----------------|
-| **Task Completion** | 92% | Successful sessions / Total sessions |
-| **Token Efficiency** | 25% reduction | Compare to v4.0.0 baseline |
-| **Cost per Task** | <$0.50 | Track with `/cost` command |
-| **Session Length** | <18 steps | Count tool calls per session |
-| **Reasoning Ratio** | <40% | Check `/cost` output |
+| **Task success without rework** | >85% | Sessions / month that passed tests first time |
+| **Rework beyond horizon** | declining | Your session log |
+| **Cost per completed task** | trend down | Task header + History |
+| **Fan-out ratio** | ≤3× single-thread | History subtask roll-up |
+| **Cache-friendly sessions** | stable prefixes, no mid-session rule edits | Self-review |
 
 ---
 
-**Version**: 4.1.0  
-**Applies to**: Kimi K2 with Roo Code  
-**Last Updated**: December 12, 2025
+**Version**: 5.0.0
+**Applies to**: Kimi for Coding endpoint (K2.8 Preview / K3) with Zoo Code or Kimi Code CLI
+**Last Updated**: September 30, 2026

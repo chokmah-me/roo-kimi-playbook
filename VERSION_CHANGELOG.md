@@ -1,9 +1,37 @@
 # Version Changelog
 
-All notable changes to the Kimi K2 & Roo Code Playbook will be documented in this file.
+All notable changes to the Kimi for Coding & Zoo Code Playbook (formerly the Kimi K2 & Roo Code Playbook) will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [5.0.0] - 2026-09-30
+
+### Breaking Changes
+- **Harness: Roo Code → Zoo Code.** Roo Code was discontinued April 2026 (final release v3.54.0; repo archived). All instructions now target **Zoo Code**, the Apache-2.0 community successor fork (docs.zoocode.dev), plus Moonshot's official **Kimi Code CLI** as a third setup track. Legacy `.roo/` config paths work unchanged.
+- **Model: K2-era → K2.8 Preview / K3.** The `kimi-for-coding` model ID now runs Kimi K2.8 Preview (upgraded in place September 11, 2026): 1M context, max output **32768** (was 16384). New endpoint model IDs: `k3`, `k3-256k`, `kimi-for-coding-highspeed`.
+- **Reasoning toggle replaced by effort levels:** `low` / `high` / `max` (third-party `medium` maps to `high`; `ultra`/`xhigh` map to `max`).
+- **Removed the "18-step limit."** Never an official limit; K2 Thinking (Nov 2025) was rated for 200–300 tool calls. Replaced with measured-horizon management and continuous verification.
+- **Cost model corrected:** the `/coding/` endpoint is subscription-quota based (membership; 5-hour rolling window + monthly total), not ~$3.00/1M. Per-token pricing moved to a separate "Open Platform" table (K3 $3.00/$15.00; K2.7 Code $0.95/$4.00 per 1M).
+- **"Legacy Format" demoted** from critical to an OpenAI-compatible troubleshooting fallback; recommended path is Zoo Code's native Kimi Code provider (OAuth, v3.72+).
+- **`/cost` and `/clear` are not built-in commands.** Cost shows in the task header + History (subtask roll-up); repeatable checks ship as custom `.roo/commands/`.
+
+### Added
+- **Kimi Code CLI track** — OpenAI/Anthropic protocol configuration, no proxies
+- **Horizon management** — measure your own 80% horizon; decompose beyond it; subagent isolation
+- **Harness-managed context** — auto-condensation v2, Smart Code Folding, checkpoints; prompt-cache hygiene rules (stable prefixes, compact rarely, no mid-session rule edits)
+- **Orchestrator-native workflows** — parallel subagents with isolated contexts ("Boomerang"), per-mode/sticky API profiles, Destructive Command Guard
+- **AGENTS.md + skills** — cross-tool config standard, `/init` bootstrap, `.roo/commands/` conventions
+- **Compliance note** — User-Agent tampering prohibited by Kimi Code terms
+- **Key-type pitfall documented** — Open Platform keys ≠ Kimi Code keys (401)
+
+### Removed
+- LiteLLM proxy detail section (replaced by a short enterprise routing note)
+- Manual top/tail file-ordering rituals and 5–7 prompt `/clear` cadence
+- Self-reported v4.x performance claims (92% / 25% reduction) — replaced with honest benchmark context and self-measurement targets
+
+### Sources
+Kimi Code docs (kimi.com/code/docs/en), Moonshot Open Platform pricing (platform.moonshot.ai), Zoo Code releases/docs (github.com/Zoo-Code-Org, docs.zoocode.dev), Kimi K2 Thinking model card (Hugging Face), Steel.dev SWE-bench Verified leaderboard (Sep 2026), Anthropic 2026 Agentic Coding Trends, METR time-horizon analyses.
 
 ## [4.1.3] - 2025-12-12
 
@@ -171,7 +199,7 @@ This project follows [Semantic Versioning](https://semver.org/):
 - **MINOR** version: New features, backward-compatible
 - **PATCH** version: Bug fixes, backward-compatible
 
-**Current Version**: 4.1.3
+**Current Version**: 5.0.0
 
 **Release Process**:
 1. Update version number in `README.md` and `VERSION_CHANGELOG.md`
@@ -183,6 +211,6 @@ This project follows [Semantic Versioning](https://semver.org/):
 ## Links
 
 - [GitHub Repository](https://github.com/chokmah-me/roo-kimi-playbook)
-- [Latest Release](https://github.com/chokmah-me/roo-kimi-playbook/releases/tag/v4.1.3)
+- [Latest Release](https://github.com/chokmah-me/roo-kimi-playbook/releases/tag/v5.0.0)
 - [Issues](https://github.com/chokmah-me/roo-kimi-playbook/issues)
 - [Documentation](https://github.com/chokmah-me/roo-kimi-playbook/blob/master/README.md)

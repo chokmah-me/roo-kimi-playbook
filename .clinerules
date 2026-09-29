@@ -1,12 +1,16 @@
 # 🛑 CRITICAL INSTRUCTION SET 🛑
-1. **NO ACTION WITHOUT CONTEXT:** You are BLOCKED from writing code until you have read `CONTEXT.md`.
-2. **VERIFY FIRST:** Your first tool call MUST be `read_file("CONTEXT.md")`.
-3. **18-STEP LIMIT:** If a task exceeds 18 tool calls, STOP and ask for a sub-task breakdown.
-4. **NO RAW DUMPS:** Output *Specifications* or *Diffs* only.
-5. **95% SUCCESS THRESHOLD:** Maintain >95% success rate within 18 sequential tool calls; failure climbs at 28+ steps.
-
+1. **CONTEXT FIRST:** Read `AGENTS.md` (and `CONTEXT.md` if present) before writing code. Project conventions live in files, not chat.
+2. **VERIFY EVERY CHANGE:** Run the relevant tests after every behavior change. A task is not done when the code is written — it is done when the tests pass.
+3. **MEASURED HORIZON:** There is no fixed step limit, but watch for degradation. If you find yourself re-doing work or going in circles, STOP, roll back to the last checkpoint, and ask for a decomposition — don't push a poisoned session forward.
+4. **NO RAW DUMPS:** Output *Specifications* or *Diffs* only. Read files just-in-time (grep ranges, not 2000-line dumps).
+5. **DELEGATE FOR ISOLATION:** Heavy exploration or independent work goes to a subagent; it returns a summary + test result and keeps this context clean.
 
 ## 🔄 The "Boomerang" Handoff
-* **Orchestrator:** Expect a "Boomerang" return (Summary + Test Result).
-* **Orchestrator:** Expect a "Boomerang" return (Summary + Test Result).
-* **Code Node:** Return results immediately. Do not hold context open.
+* **Orchestrator:** Expect a "Boomerang" return (Summary + Test Result) from every subtask.
+* **Subagent:** Return results immediately. Do not hold context open; do not leak your scratch work into the parent.
+
+## 🛡 Safety Rails
+* Never retry the same failed command more than once without changing the approach.
+* If tool output contradicts your assumption, STOP and report — do not force the narrative.
+* Confirm before destructive operations; respect the Destructive Command Guard.
+* Never tamper with client identification (User-Agent) — it violates Kimi Code terms.
