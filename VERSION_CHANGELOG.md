@@ -230,7 +230,7 @@ This project follows [Semantic Versioning](https://semver.org/):
 
 ## Links
 
-- [GitHub Repository](https://github.com/chokmah-me/roo-kimi-playbook)
-- [Latest Release](https://github.com/chokmah-me/roo-kimi-playbook/releases/tag/v5.0.0)
-- [Issues](https://github.com/chokmah-me/roo-kimi-playbook/issues)
-- [Documentation](https://github.com/chokmah-me/roo-kimi-playbook/blob/master/README.md)
+- [GitHub Repository](https://github.com/chokmah-me/zoo-kimi-playbook)
+- [Latest Release](https://github.com/chokmah-me/zoo-kimi-playbook/releases/tag/v5.0.0)
+- [Issues](https://github.com/chokmah-me/zoo-kimi-playbook/issues)
+- [Documentation](https://github.com/chokmah-me/zoo-kimi-playbook/blob/main/README.md)

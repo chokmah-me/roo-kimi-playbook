@@ -1,4 +1,4 @@
-# Install the roo-kimi-playbook configuration into a project directory.
+# Install the zoo-kimi-playbook configuration into a project directory.
 # Usage: .\setup.ps1 -Target C:\path\to\project
 param(
     [Parameter(Mandatory = $true)]

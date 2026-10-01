@@ -1,6 +1,6 @@
 # AGENTS.md — <project name>
 
-> Starter template from the roo-kimi-playbook. Fill in the brackets, delete
+> Starter template from the zoo-kimi-playbook. Fill in the brackets, delete
 > what doesn't apply, keep it under one page. This file is loaded at the
 > start of every session — stale instructions here tax every task.
 

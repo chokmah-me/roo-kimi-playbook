@@ -105,4 +105,4 @@ MIT License
 
 **Version**: 5.0.0
 **Date**: September 30, 2026
-**Repository**: https://github.com/chokmah-me/roo-kimi-playbook
+**Repository**: https://github.com/chokmah-me/zoo-kimi-playbook

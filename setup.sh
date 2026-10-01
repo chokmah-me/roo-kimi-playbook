@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Install the roo-kimi-playbook configuration into a project directory.
+# Install the zoo-kimi-playbook configuration into a project directory.
 # Usage: ./setup.sh /path/to/project
 set -euo pipefail
 
