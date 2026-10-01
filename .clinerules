@@ -1,4 +1,7 @@
 # 🛑 CRITICAL INSTRUCTION SET 🛑
+<!-- Audience: Cline-family harnesses read .clinerules. Zoo Code and the Kimi Code
+     CLI read .roo/rules.md and AGENTS.md instead — treat those as authoritative
+     there; this file is kept for cross-harness compatibility. -->
 1. **CONTEXT FIRST:** Read `AGENTS.md` (and `CONTEXT.md` if present) before writing code. Project conventions live in files, not chat.
 2. **VERIFY EVERY CHANGE:** Run the relevant tests after every behavior change. A task is not done when the code is written — it is done when the tests pass.
 3. **MEASURED HORIZON:** There is no fixed step limit, but watch for degradation. If you find yourself re-doing work or going in circles, STOP, roll back to the last checkpoint, and ask for a decomposition — don't push a poisoned session forward.

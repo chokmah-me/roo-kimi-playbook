@@ -10,17 +10,24 @@
 - **Model updated**: `kimi-for-coding` now runs **K2.8 Preview** (1M context, max output 32768, effort levels `low`/`high`/`max`); `k3`, `k3-256k`, `kimi-for-coding-highspeed` also on the endpoint
 - **"18-step limit" removed**: replaced with measured-horizon management; current models are rated for hundreds of tool calls
 - **Cost model corrected**: the `/coding/` endpoint is **subscription-quota** (membership tiers); per-token pricing lives on the separate Open Platform
+- **Tier availability corrected against the official docs**: `kimi-for-coding` from Andante up; `k3`/`k3-256k` from Moderato/Plus; `highspeed` and `k3` 1M from Allegretto/Pro
 - **Context rituals replaced**: Zoo Code auto-condensation + checkpoints + AGENTS.md supersede manual file-ordering and `/clear` cadence
 - **Legacy Format demoted**: use Zoo Code's native Kimi Code provider (OAuth) instead
 
 ## 📦 Package Contents
 
 ### Core Configuration Files
-- **`.clinerules`** - Critical instruction set for AI assistants
+- **`.clinerules`** - Critical instruction set (Cline-family harnesses; Zoo Code / Kimi Code CLI users treat `.roo/rules.md` as authoritative)
 - **`.roo/rules.md`** - Zoo Code specific configuration rules (Zoo Code reads the same `.roo/` paths)
+- **`.roo/commands/costcheck.md`** - Example custom command (`/costcheck`): quota/cost position report
+- **`templates/AGENTS.md`** - Starter AGENTS.md for projects that can't run `/init`
+
+### Setup Scripts
+- **`setup.sh`** / **`setup.ps1`** - Copy the config files (and starter AGENTS.md) into a project directory
 
 ### Documentation
 - **`PLAYBOOK.md`** - Main configuration & strategy guide
+- **`REFERENCE.md`** - Volatile facts in one place: endpoints, model IDs, tiers, quota, prices (verified 2026-09-30)
 - **`INSTALLATION_GUIDE.md`** - Step-by-step setup for all three tracks
 - **`EVERYDAY_USE_CASES.md`** - Practical usage examples
 - **`VERSION_CHANGELOG.md`** - Version history and changes
@@ -30,17 +37,25 @@
 ### For New Projects
 
 ```bash
-# Copy configuration files
+# Option 1: setup script (copies config + starter AGENTS.md if none exists)
+./setup.sh /path/to/your/project/
+# PowerShell:
+# .\setup.ps1 -Target C:\path\to\your\project
+```
+
+```bash
+# Option 2: manual copy
 cp .clinerules /path/to/your/project/
 cp -r .roo /path/to/your/project/
+cp templates/AGENTS.md /path/to/your/project/AGENTS.md  # if the project has none
 
 # Copy documentation for reference
-cp PLAYBOOK.md /path/to/your/project/
+cp PLAYBOOK.md REFERENCE.md /path/to/your/project/
 cp INSTALLATION_GUIDE.md /path/to/your/project/
 cp EVERYDAY_USE_CASES.md /path/to/your/project/
 ```
 
-Then install Zoo Code from the VS Code Marketplace (or the Kimi Code CLI) and follow `INSTALLATION_GUIDE.md`.
+Then install Zoo Code from the VS Code Marketplace (publisher `ZooCodeOrganization`: `code --install-extension ZooCodeOrganization.zoo-code`) or the Kimi Code CLI, and follow `INSTALLATION_GUIDE.md`.
 
 ### Configuration Summary
 
@@ -56,17 +71,20 @@ Then install Zoo Code from the VS Code Marketplace (or the Kimi Code CLI) and fo
 
 ## 🎯 Key Facts (Sept 2026)
 
-- **Model**: `kimi-for-coding` = K2.8 Preview (1M context); `k3` = flagship (Pro tier, 1M); `k3-256k` ≈ half quota; `kimi-for-coding-highspeed` ≈ 5–6× faster, 3× quota
+- **Model**: `kimi-for-coding` = K2.8 Preview (1M context); `k3` = flagship (1M); `k3-256k` ≈ half quota; `kimi-for-coding-highspeed` ≈ 5–6× faster, 3× quota
+- **Tiers** (official naming): Andante (~$19) → Moderato/Plus (~$39) → Allegretto/Pro (~$99) → Allegro (~$199). `kimi-for-coding` from Andante up; `k3`/`k3-256k` from Moderato/Plus; `highspeed` and `k3` 1M from Allegretto/Pro
 - **Billing**: membership quota (5-hour rolling window + monthly total); Extra Usage wallet for overage; Open Platform is a separate pay-as-you-go product ($0.95–$3.00 input / $4.00–$15.00 output per 1M)
 - **Context**: auto-condensation + Smart Code Folding + checkpoints; prompt-cache hygiene beats manual ordering
 - **Horizon**: no fixed step ceiling — measure your own, decompose beyond it, verify continuously
+- **Volatile details** (exact prices, tier availability, model IDs): see **`REFERENCE.md`**, verified 2026-09-30
 
 ## 📚 Documentation Guide
 
 1. **`INSTALLATION_GUIDE.md`** — Zoo Code / Kimi Code CLI setup, provider tracks, verification
-2. **`PLAYBOOK.md`** — strategy: horizon management, context engineering, cost governance, workflow architecture, benchmarks
-3. **`EVERYDAY_USE_CASES.md`** — 6 worked examples with effort levels, subagent delegation, and token estimates
-4. **`VERSION_CHANGELOG.md`** — full history, v4.x preserved in git tags
+2. **`REFERENCE.md`** — endpoints, model IDs, tier availability, quota, prices (the numbers that drift; check here first)
+3. **`PLAYBOOK.md`** — strategy: horizon management, context engineering, cost governance, workflow architecture, benchmarks
+4. **`EVERYDAY_USE_CASES.md`** — 6 worked examples with effort levels, subagent delegation, and token estimates
+5. **`VERSION_CHANGELOG.md`** — full history, v4.x preserved in git tags
 
 ## 🔧 Daily Workflow
 

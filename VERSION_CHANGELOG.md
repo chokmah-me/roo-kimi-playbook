@@ -5,6 +5,26 @@ All notable changes to the Kimi for Coding & Zoo Code Playbook (formerly the Kim
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **LICENSE** — MIT license file; README/PLAYBOOK license claims now point at a real file
+- **REFERENCE.md** — single source of truth for volatile facts (endpoints, model IDs, tier availability, quota, prices), verified 2026-09-30 against the official Kimi Code docs; strategy docs link here instead of repeating numbers
+- **setup.sh / setup.ps1** — one-command install of the config files (+ starter AGENTS.md) into a project, bash and PowerShell
+- **`.roo/commands/costcheck.md`** — example custom command (`/costcheck`)
+- **`templates/AGENTS.md`** — starter AGENTS.md for projects that can't run `/init`
+- **MCP servers section** (PLAYBOOK Part IV + `.roo/rules.md`) — `.roo/mcp.json`, per-mode `allowedMcpServers`, start-minimal guidance
+- **Track C smoke test** (INSTALLATION_GUIDE) — `kimi doctor`, `kimi -p`, `kimi -m kimi-code/<id>` model-alias form
+- **403 troubleshooting row** — client-identifier whitelist failures (e.g. Zoo Code v3.56.0), distinct from 401s
+- **"When to prefer the Open Platform"** paragraph in the enterprise routing note
+
+### Fixed
+- Marketplace publisher corrected to **ZooCodeOrganization** (`code --install-extension ZooCodeOrganization.zoo-code`)
+- Tier availability corrected against the official docs: `kimi-for-coding` from **Andante** up (was "Plus and above"); `k3`/`k3-256k` from **Moderato/Plus**; `highspeed` and `k3` 1M from **Allegretto/Pro**; dropped the unverified "legacy → new" tier-name mapping
+- Effort-level mapping softened: `medium`→`high` etc. are client-specific aliases, not portable API behavior (third-party configs pass `medium`/`auto`/`off` straight through)
+- Fan-out metric reconciled with the documented 3–7× cost band (≤3× for ≤2 subagents)
+- `.clinerules` audience clarified (Cline-family; Zoo Code / Kimi CLI use `.roo/rules.md`)
+
 ## [5.0.0] - 2026-09-30
 
 ### Breaking Changes

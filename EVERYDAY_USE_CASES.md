@@ -217,7 +217,9 @@ Costs show in the **task header** (tokens in/out + estimated $) and aggregate in
 
 ### Reference points (Sept 2026)
 
-- **Kimi Code membership**: quota-based — 5-hour rolling window + monthly total. Practical limit is your tier, not a dollar meter. `k3` burns fastest; `k3-256k` ≈ half; `highspeed` ≈ 3×.
+Full numbers live in **`REFERENCE.md`** (verified 2026-09-30). The shape:
+
+- **Kimi Code membership**: quota-based — 5-hour rolling window + monthly total. Practical limit is your tier, not a dollar meter. `k3` (1M) burns ≈2× `k3-256k`; `highspeed` ≈ 3×.
 - **Open Platform pay-as-you-go** (separate product): K3 $3.00 in / $15.00 out per 1M; K2.7 Code $0.95 / $4.00; cache-hit input ~$0.16–$0.30.
 
 ### Rough monthly shape (individual, daily use)
@@ -237,7 +239,7 @@ Track these for your projects:
 | **Task success without rework** | >85% | Sessions / month that passed tests first time |
 | **Rework beyond horizon** | declining | Your session log |
 | **Cost per completed task** | trend down | Task header + History |
-| **Fan-out ratio** | ≤3× single-thread | History subtask roll-up |
+| **Fan-out ratio** | ≤3× for ≤2 subagents; low end of the 3–7× band | History subtask roll-up |
 | **Cache-friendly sessions** | stable prefixes, no mid-session rule edits | Self-review |
 
 ---

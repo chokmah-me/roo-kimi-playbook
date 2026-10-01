@@ -5,7 +5,7 @@
 **Fallback (OpenAI Compatible)**:
 - Base URL: `https://api.kimi.com/coding/v1` (overseas: `https://api.kimi.ai/coding/v1`)
 - Model: `kimi-for-coding` (K2.8 Preview) · Max Output: `32768` · Effort: `high`
-- Model IDs: `kimi-for-coding` (default) · `k3` / `k3-256k` (Pro tier) · `kimi-for-coding-highspeed`
+- Model IDs: `kimi-for-coding` (default) · `k3` / `k3-256k` (Moderato/Plus+; 1M needs Allegretto/Pro) · `kimi-for-coding-highspeed` (Allegretto/Pro+)
 
 ## Critical Rules
 1. **NEVER** tamper with the client User-Agent — Kimi Code terms prohibit it (membership suspension risk)
@@ -18,7 +18,7 @@
 - `low`: formatting, boilerplate, docs, mechanical test generation
 - `high`: daily driver — implementation, debugging, review (default)
 - `max`: architecture, ambiguous multi-system problems
-- Mapping from third-party tools: `medium` → `high`, `ultra`/`xhigh` → `max`, `none` → thinking off
+- The documented API levels are `low` / `high` / `max`; third-party client aliases (`medium`, `auto`, `off`, `ultra`/`xhigh`) map client-side and are not portable — prefer the three documented levels
 
 ## Context Strategy (harness-managed)
 - Auto-condensation v2 + Smart Code Folding handle overflow — no manual `/clear` rituals; start a new task per unit of work
@@ -35,8 +35,8 @@
 - Parallel subagents multiply tokens ~3–7× — only for genuinely independent work, cap at 2–3 concurrent
 
 ## Financial Safety Rails
-- **Kimi Code is subscription-quota**: 5-hour rolling window + monthly total (Plus tier minimum; Pro for `k3` 1M)
-- **Burn rates**: `k3` fast · `k3-256k` ≈ half · `highspeed` 3× — reserve `k3`/`max` for problems that need them
+- **Kimi Code is subscription-quota**: 5-hour rolling window + monthly total (Andante minimum; Moderato/Plus for `k3`; Allegretto/Pro for `k3` 1M / `highspeed`) — full table in the repo's `REFERENCE.md`
+- **Burn rates**: `k3` (1M) ≈ 2× `k3-256k` · `highspeed` ≈ 3× — reserve `k3`/`max` for problems that need them
 - **Extra Usage wallet**: keep topped up for deadline bursts
 - **Open Platform (separate)**: K3 $3.00/$15.00 per 1M; K2.7 Code $0.95/$4.00; cache-hit input ~$0.16–$0.30
 - **Alert**: hitting the 5-hour window repeatedly = under-tiered or over-delegating
@@ -55,6 +55,7 @@
 - Destructive Command Guard stays enabled
 
 ## Skills & Commands
-- AGENTS.md is the cross-tool standard — keep it current (`/init` to bootstrap)
-- Reusable workflows go in `.roo/commands/*.md` (frontmatter: description, argument-hint, mode)
+- AGENTS.md is the cross-tool standard — keep it current (`/init` to bootstrap, or the `templates/AGENTS.md` starter)
+- Reusable workflows go in `.roo/commands/*.md` (frontmatter: description, argument-hint, mode) — see the `costcheck.md` example
 - Skills (`SKILL.md`) for loadable capabilities — bodies load on demand
+- MCP servers live in `.roo/mcp.json` (project) or the extension's MCP settings (global); restrict per mode with `allowedMcpServers` in custom modes — keep the list minimal, every server's tools are listed in every prompt

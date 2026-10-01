@@ -32,7 +32,7 @@
 | :--- | :--- | :--- |
 | **Provider** | `Kimi Code` (native) | OAuth device flow; sign in with your Kimi account |
 | **Model ID** | `kimi-for-coding` | Default; runs **K2.8 Preview** (1M context) |
-| **Alt models** | `k3`, `k3-256k`, `kimi-for-coding-highspeed` | `k3` = flagship (Pro tier, 1M only); `k3-256k` ≈ half quota; `highspeed` ≈ 5–6× faster output, 3× quota |
+| **Alt models** | `k3`, `k3-256k`, `kimi-for-coding-highspeed` | `k3` = flagship (Moderato/Plus and above; 1M context needs Allegretto/Pro); `k3-256k` ≈ half quota; `highspeed` ≈ 5–6× faster output, 3× quota (Allegretto/Pro and above) |
 | **Reasoning effort** | `high` (default) | `low` / `high` / `max`; default for `kimi-for-coding` is `max`, but `high` is the sane daily driver |
 
 ### Track B — Zoo Code, OpenAI-compatible (fallback / other tools)
@@ -44,7 +44,7 @@
 | **API Key** | `sk-kimi-...` | Kimi Code Console (max 5 keys). **Not** an Open Platform key — they are not interchangeable (401 otherwise) |
 | **Model ID** | `kimi-for-coding` | K2.8 Preview |
 | **Max Output** | `32768` | Current model limit |
-| **Reasoning effort** | `high` | If your tool only offers `medium`, it maps to `high`; `ultra`/`xhigh` map to `max` |
+| **Reasoning effort** | `high` | The documented levels are `low` / `high` / `max`. Some third-party clients also expose aliases (`medium`, `auto`, `off`, `none`, `ultra`/`xhigh`) — mapping behavior is client-specific, and the API returns HTTP 400 for values it doesn't accept. When in doubt, use the three documented levels. |
 
 ### Track C — Kimi Code CLI
 
@@ -92,24 +92,25 @@ Zoo Code handles overflow automatically: **Intelligent Context Condensation v2**
 
 ## 💰 Part III: Cost Governance
 
+> Volatile numbers (exact prices, tier availability, model IDs) live in
+> **`REFERENCE.md`** — verified 2026-09-30 against the official Kimi Code
+> docs. Re-verify before spending money.
+
 ### Kimi Code endpoint (subscription)
 
 The `/coding/` endpoint bills against **membership quota**, not per token:
 - Quota windows: rolling 5-hour rate window + monthly total (weekly cap removed for new plans)
-- Tiers (legacy names → new): Andante/Go ~$19, Moderato/Plus ~$39, Allegretto/Pro ~$99, Allegro ~$199 per month. Kimi Code requires **Plus** and above; 1M context on `k3` / `highspeed` requires **Pro** and above.
-- Optional **Extra Usage** wallet (pay-as-you-go top-up) for overage.
-- ⚠️ New subscriptions were briefly paused in July 2026 (K3 GPU capacity) — check current availability on the membership page.
-- Quota burn differs by model: `k3` burns fast; `k3-256k` ~half; `highspeed` 3×.
+- Tiers use the official naming: **Andante** (~$19) → **Moderato / Plus** (~$39) → **Allegretto / Pro** (~$99) → **Allegro** (~$199) per month
+- Availability per the official docs: `kimi-for-coding` from **Andante** up; `k3` / `k3-256k` from **Moderato / Plus**; `highspeed` and `k3` 1M context from **Allegretto / Pro**
+- Optional **Extra Usage** wallet (pay-as-you-go top-up) for overage
+- ⚠️ New subscriptions were briefly paused in July 2026 (K3 GPU capacity) — check current availability on the membership page
+- Quota burn differs by model: `k3` (1M) ≈ **2×** `k3-256k`; `highspeed` ≈ **3×**
 
 ### Open Platform (pay-as-you-go, separate product)
 
-| Model | Input / 1M | Cached input / 1M | Output / 1M |
-| :--- | :--- | :--- | :--- |
-| Kimi K3 | $3.00 | $0.30 | $15.00 |
-| Kimi K2.7 Code | $0.95 | $0.19 | $4.00 |
-| Kimi K2.6 | $0.95 | $0.16 | $4.00 |
-
-Batch API: 60% of standard (K2.6/K2.7 Code; K3 not supported). **Open Platform keys do not work on `/coding/` and vice versa.**
+Full price table in `REFERENCE.md`. Summary (Sept 2026): K3 $3.00/$15.00 per 1M
+in/out; K2.7 Code $0.95/$4.00; cache-hit input ~$0.16–$0.30; batch API at 60%
+(K2.6/K2.7 Code only). **Open Platform keys do not work on `/coding/` and vice versa.**
 
 ### Alert rules (v5)
 
@@ -145,13 +146,20 @@ Modes support **per-mode API profiles** (v3.48+ lock toggle), and profiles are *
 - **AGENTS.md** is the cross-tool standard (25+ tools read it; Zoo Code loads it recursively). One file, project root, kept current.
 - **Skills** (`SKILL.md` bundles) are an open standard — use them for reusable capabilities; bodies load on demand (progressive disclosure).
 
+### MCP servers
+
+- **Zoo Code**: project-level MCP config lives in `<project>/.roo/mcp.json` (hot-reloaded on save); global servers are managed in the extension's MCP settings. Restrict servers per mode with `allowedMcpServers` in custom modes — e.g. give Architect the docs/search servers, keep Code lean.
+- **Kimi Code CLI**: MCP servers are configured in `~/.kimi-code/config.toml` — see the [CLI docs](https://www.kimi.com/code/docs/en/).
+- **Start minimal.** Every configured server's tools are listed in every prompt, so unused servers tax context and quota on every turn. One web/docs server and one browser/automation server (only if you need it) is plenty to start.
+- **Vet servers like dependencies.** MCP servers run as subprocesses with your user's privileges. Prefer Skills over MCP when the capability is prompt knowledge rather than live data — skills load on demand, MCP tools are always listed.
+
 ---
 
 ## ✅ Part V: The "Go-Live" Checklist
 
 1. [ ] **Harness installed**: Zoo Code (≥ 3.72) or Kimi Code CLI; Roo Code replaced if still present (frozen, no patches).
 2. [ ] **Auth working**: native Kimi Code provider OAuth sign-in, or `sk-kimi-...` key verified against `/coding/v1`.
-3. [ ] **Model selected**: `kimi-for-coding` default; `k3` for hard problems (Pro tier); `highspeed` when latency matters.
+3. [ ] **Model selected**: `kimi-for-coding` default; `k3` for hard problems (Moderato/Plus+; 1M needs Allegretto/Pro); `highspeed` when latency matters.
 4. [ ] **Max output 32768** (OpenAI-compatible track only — native provider sets this for you).
 5. [ ] **Effort protocol understood**: `low` rote / `high` daily driver / `max` architecture & gnarly debugging.
 6. [ ] **AGENTS.md present**: run `/init` or hand-write; rules live in files, not chat.
@@ -173,7 +181,7 @@ Modes support **per-mode API profiles** (v3.48+ lock toggle), and profiles are *
 | Task success without rework | >85% | Successful sessions / total |
 | Cost per completed task | trend down | Task header + History |
 | Quota rhythm | never hit 5-hour wall | membership dashboard |
-| Subagent fan-out ratio | ≤3× single-thread cost | History roll-up |
+| Subagent fan-out ratio | ≤3× for ≤2 subagents; stay at the low end of the 3–7× band | History roll-up |
 | Rework rate beyond horizon | declining | your own log |
 
 The v4.x "92% completion / 25% token reduction" figures were self-reported from a 100-task sample on the K2-era model; treat them as historical, not current guarantees.
@@ -184,7 +192,11 @@ The v4.x "92% completion / 25% token reduction" figures were self-reported from 
 
 **401 Unauthorized:**
 - Wrong key type: Open Platform keys fail on `/coding/` and vice versa.
-- Entitlement: `k3` and 1M context require Pro tier — 401 is also used for plan-entitlement failures.
+- Entitlement: `k3` and 1M context require Allegretto/Pro tier — 401 is also used for plan-entitlement failures.
+
+**403 Provider refused (client not whitelisted):**
+- The `/coding/` endpoint whitelists client identifiers. After some client updates (e.g. Zoo Code v3.56.0 changed its OpenAI-compatible identifier), requests fail with `403` / `access_terminated_error` ("only available for Coding Agents such as…") even with a valid key.
+- Fix: update Zoo Code to the latest release (the whitelist catches up), or sidestep the question entirely with Track A — the native Kimi Code provider.
 
 **Garbled responses / tool-call format errors (OpenAI-compatible track only):**
 - Try the "Legacy Format" toggle in Advanced settings. In 2026 this could not be confirmed as required — the native Kimi Code provider avoids the question entirely. Prefer Track A.

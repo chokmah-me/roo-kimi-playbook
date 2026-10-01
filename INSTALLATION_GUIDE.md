@@ -7,7 +7,7 @@
 ## 📋 Prerequisites
 
 1. **Zoo Code extension** (VS Code Marketplace) *or* **Kimi Code CLI** installed
-2. **Kimi membership** with Kimi Code access — Plus tier and above (https://www.kimi.com/code/)
+2. **Kimi membership** with Kimi Code access — Andante tier and above (https://www.kimi.com/code/)
 3. **API key** (`sk-kimi-...`) from the Kimi Code Console, if using the OpenAI-compatible track
 4. This playbook package extracted or cloned
 
@@ -30,8 +30,11 @@
 ### Step 1: Install Zoo Code
 
 1. Open VS Code → Extensions (`Ctrl+Shift+X`)
-2. Search **"Zoo Code"** (publisher: Zoo-Code-Org) — *not* the archived "Roo Code" listing
-3. Install; docs live at https://docs.zoocode.dev
+2. Search **"Zoo Code"** (publisher: **ZooCodeOrganization**) — *not* the archived "Roo Code" listing. Or from a terminal:
+   ```bash
+   code --install-extension ZooCodeOrganization.zoo-code
+   ```
+3. Docs live at https://docs.zoocode.dev, including the [Roo → Zoo migration guide](https://docs.zoocode.dev/roo-to-zoo-migration)
 
 ### Step 2: Connect the Kimi Code Provider
 
@@ -46,12 +49,12 @@ No API key, Base URL, or Legacy Format fiddling needed — the provider sets cor
 
 | Model ID | Actual model | Context | When to use |
 |----------|--------------|---------|-------------|
-| `kimi-for-coding` | K2.8 Preview | 1M | Default daily driver |
-| `k3` | K3 | 1M | Hardest problems (requires Pro tier) |
-| `k3-256k` | K3 | 256K | K3 quality at ~half quota burn |
-| `kimi-for-coding-highspeed` | K2.7 Code HighSpeed | 256K | ~5–6× faster output when latency matters (3× quota) |
+| `kimi-for-coding` | K2.8 Preview | 1M | Default daily driver (Andante and above) |
+| `k3` | K3 | 1M | Hardest problems (Moderato/Plus and above; 1M needs Allegretto/Pro) |
+| `k3-256k` | K3 | 256K | K3 quality at ~half quota burn (Moderato/Plus and above) |
+| `kimi-for-coding-highspeed` | K2.7 Code HighSpeed | 256K | ~5–6× faster output when latency matters, 3× quota (Allegretto/Pro and above) |
 
-1M context on `k3`/`highspeed` requires Pro tier and above.
+Full tier/price table: `REFERENCE.md`.
 
 ### Step 4: Configure Effort
 
@@ -78,7 +81,10 @@ Create an API key (max 5 per account) in the **Kimi Code Console**. ⚠️ This 
 | **Max Output** | `32768` |
 | **Reasoning effort** | `high` |
 
-**Effort mapping** (per official docs): if your tool only offers `medium`, it maps to `high`; `ultra`/`xhigh` map to `max`; `none` disables thinking. Unknown values return HTTP 400.
+**Effort levels:** the documented values are `low` / `high` / `max`. Some third-party
+clients also expose aliases (`medium`, `auto`, `off`, `none`, `ultra`/`xhigh`) —
+mapping behavior is client-specific, and the API returns HTTP 400 for values it
+doesn't accept. When in doubt, use the three documented levels.
 
 ### Step 3: Troubleshooting Format Issues
 
@@ -111,18 +117,46 @@ export OPENAI_API_KEY="sk-kimi-..."
 
 Overseas users: replace `api.kimi.com` with `api.kimi.ai`. Model IDs and effort levels are the same as Track A. Per the Kimi Code terms, do **not** tamper with the client User-Agent — it is grounds for suspension.
 
+### Step 2: Verify (Track C smoke test)
+
+```bash
+kimi --version          # CLI is installed
+kimi doctor            # validates config.toml / tui.toml (exit 0 = healthy)
+kimi login             # OAuth device-flow sign-in (once per machine)
+kimi -p "Reply with the word OK"   # endpoint smoke test, no TUI needed
+```
+
+Model override uses the `kimi-code/<model-id>` alias form:
+
+```bash
+kimi -m kimi-code/k3 -p "Explain the latest diff"
+```
+
+If the smoke prompt fails, check the base URL / key type first (Track B
+troubleshooting applies: Open Platform keys return 401 on `/coding/`).
+
 ---
 
 ## 📁 Files to Copy to Your Project
 
 ```bash
+# Easiest: the setup script does all of this (bash or PowerShell)
+./setup.sh /path/to/your/project/
+# .\setup.ps1 -Target C:\path\to\your\project
+```
+
+```bash
+# Manual equivalent
 cp .clinerules /path/to/your/project/
-cp -r .roo /path/to/your/project/
-cp PLAYBOOK.md INSTALLATION_GUIDE.md EVERYDAY_USE_CASES.md /path/to/your/project/
+cp -r .roo /path/to/your/project/          # includes the example .roo/commands/costcheck.md
+cp templates/AGENTS.md /path/to/your/project/AGENTS.md   # only if the project has none
+cp PLAYBOOK.md REFERENCE.md INSTALLATION_GUIDE.md EVERYDAY_USE_CASES.md /path/to/your/project/
 ```
 
 - **`.clinerules`** — verification-first instructions, horizon management, safety rails
 - **`.roo/rules.md`** — provider settings, effort protocol, cache hygiene, cost governance
+- **`.roo/commands/costcheck.md`** — example custom command (`/costcheck`)
+- **`templates/AGENTS.md`** — starter AGENTS.md for projects that can't run `/init`
 - Zoo Code also reads **`AGENTS.md`** and `.roo/rules-*` mode files recursively — run **`/init`** in the chat to generate them from your codebase
 
 ---
@@ -132,11 +166,12 @@ cp PLAYBOOK.md INSTALLATION_GUIDE.md EVERYDAY_USE_CASES.md /path/to/your/project
 - [ ] Zoo Code connected (Track A) or `curl /models` returns JSON (Tracks B/C)
 - [ ] Model `kimi-for-coding` selected; effort `high`
 - [ ] Max output `32768` (Track B only)
+- [ ] Track C: `kimi doctor` exit 0 and `kimi -p` smoke prompt answers
 - [ ] Test message completes; cost estimate visible in the task header
 - [ ] Checkpoints enabled; Destructive Command Guard on
 - [ ] `AGENTS.md` generated (`/init`) or present
 - [ ] Rules files copied (`.clinerules`, `.roo/rules.md`)
-- [ ] Membership tier confirmed (Plus+; Pro+ for `k3` 1M / highspeed 1M)
+- [ ] Membership tier confirmed (Andante+; Moderato/Plus+ for `k3`; Allegretto/Pro+ for `k3` 1M / highspeed) — see `REFERENCE.md`
 
 ## 🎯 First Test Session
 
@@ -150,6 +185,11 @@ cp PLAYBOOK.md INSTALLATION_GUIDE.md EVERYDAY_USE_CASES.md /path/to/your/project
 ## 🏢 Enterprise Routing Note
 
 For teams needing centralized budgets/limits, route the **Open Platform** (https://api.moonshot.ai/v1 — pay-as-you-go, model IDs like `kimi-k3`, `kimi-k2.7-code`) through your own LLM gateway. Remember: Open Platform keys **do not** work against `/coding/`, and per-token rates there (K3 $3.00/$15.00 per 1M; K2.7 Code $0.95/$4.00; cache-hit ~$0.16–$0.30) are separate from Kimi Code membership quota.
+
+**When to prefer the Open Platform over Kimi Code:** you need the batch API
+(60% pricing), non-coding models/endpoints, or org-level centralized budgets —
+Kimi Code membership is per-user quota with no team pooling. For interactive
+agentic coding, Kimi Code is the cheaper and better-supported path.
 
 ---
 
